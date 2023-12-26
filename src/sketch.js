@@ -1,5 +1,11 @@
 // Sound objects
-let sound, lowpassFilter, dynamicCompressor, reverb, waveshaper, masterVolume;
+let sound,
+  lowpassFilter,
+  dynamicCompressor,
+  reverb,
+  waveshaper,
+  masterVolume,
+  fft;
 
 // playback controls
 let pauseButton;
@@ -41,20 +47,28 @@ let wd_oversampleSlider;
 let wd_dryWetSlider;
 let wd_outputSlider;
 
+function preload() {
+  sound = loadSound("../assets/sound.wav");
+}
+
 function setup() {
   createCanvas(800, 600);
   background(180);
   initSound();
   gui_configuration();
   functionalityConfiguration();
+  fft.setInput(sound);
 }
 
-function draw() {}
+function draw() {
+  // background(180);
+  drawSpectrum(fft, 560, 210, 200, 100);
+}
 
 // functionality
 function initSound() {
   // Initialize p5.sound objects
-  sound = loadSound("../assets/sound.wav");
+  fft = new p5.FFT();
   lowPassFilter = new p5.LowPass();
   dynamicCompressor = new p5.Compressor();
   reverb = new p5.Reverb();
@@ -204,4 +218,23 @@ function Slider() {
   text("output level", 210, 465);
 }
 
-function Button() {}
+function drawSpectrum(fft, x, y, w, h) {
+  let spectrum = fft.analyze();
+
+  // reset the spectrum rectangle
+  fill(255);
+  rect(x, y, w, h);
+
+  beginShape();
+  noFill();
+  stroke(0); // Set the stroke color to black
+
+  for (let i = 0; i < spectrum.length; i++) {
+    const barX = map(i, 0, spectrum.length, x, x + w); // Distribute bars evenly along the x-axis
+    const barY = map(spectrum[i], 0, 255, y + h, y); // Map the spectrum values to the height of the canvas
+
+    vertex(barX, barY);
+  }
+
+  endShape();
+}
