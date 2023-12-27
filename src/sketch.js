@@ -1,11 +1,13 @@
 // Sound objects
 let sound,
+  originSound,
   lowpassFilter,
   dynamicCompressor,
   reverb,
   waveshaper,
   masterVolume,
-  fft;
+  fft,
+  fftoutput;
 
 // playback controls
 let pauseButton;
@@ -57,47 +59,81 @@ function setup() {
   initSound();
   gui_configuration();
   functionalityConfiguration();
-  fft.setInput(sound);
 }
 
 function draw() {
-  // background(180);
+   // Map mouseX to a the cutoff frequency from the lowest
+  // frequency (10Hz) to the highest (22050Hz) that humans can hear
+  const filterFreq = map(lp_cutOffSlider.value(), 0, 1, 10, 22050);
+
+  // Map mouseY to resonance (volume boost) at the cutoff frequency
+  const filterRes = map(lp_resonanceSlider.value(), 0, 1, 15, 5);
+  lowpassFilter.set(filterFreq, filterRes)
+  lowpassFilter.drywet(lp_dryWetSlider.value());
+  lowpassFilter.amp(lp_outputSlider.value());
+
+  // draw the visuals
   drawSpectrum(fft, 560, 210, 200, 100);
+  drawSpectrum(fftoutput, 560, 355, 200, 100);
 }
 
 // functionality
 function initSound() {
   // Initialize p5.sound objects
   fft = new p5.FFT();
-  lowPassFilter = new p5.LowPass();
+  fftoutput = new p5.FFT();
+
+  lowpassFilter = new p5.LowPass();
   dynamicCompressor = new p5.Compressor();
   reverb = new p5.Reverb();
   waveshaper = new p5.Distortion();
-  // masterVolume = new p5.Volume();
 
   // Connect the effects in the desired order
-  // sound.disconnect(); // Disconnect from the default output
-  // sound.connect(lowPassFilter);
-  // lowPassFilter.connect(dynamicCompressor);
-  // dynamicCompressor.connect(reverb);
-  // reverb.connect(waveshaper);
-  // waveshaper.connect(masterVolume);
-  // masterVolume.connect();
+  sound.disconnect(); // Disconnect from the default output
+  fft.setInput(sound);
+
+  sound.connect(lowpassFilter);
+  // const soundchain = lowpassFilter.chain(waveshaper, dynamicCompressor, reverb);
+  fftoutput.setInput(lowpassFilter)
 }
 
 function functionalityConfiguration() {
-  playButton.mousePressed(() => {
-    if (!sound.isPlaying()) {
-      sound.play();
-    }
-  });
-  stopButton.mousePressed(() => {
+  playButton.mousePressed(play);
+  stopButton.mousePressed(stop);
+  pauseButton.mousePressed(pause);
+  skipStartButton.mousePressed(skipToStart);
+  skipEndButton.mousePressed(skipToEnd);
+  loopButton.mousePressed(loopSound);
+}
+
+function play() {
+  if (!sound.isPlaying()) {
+    sound.play();
+  }
+}
+
+function stop() {
+  if (sound.isPlaying()) {
     sound.stop();
-  });
-  pauseButton.mousePressed(() => sound.pause());
-  skipStartButton.mousePressed(() => sound.jump(0));
-  skipEndButton.mousePressed(() => sound.jump(sound.duration() - 0.000001));
-  loopButton.mousePressed(() => sound.setLoop(!sound.isLooping()));
+  }
+}
+
+function pause() {
+  if (sound.isPlaying()) {
+    sound.pause()
+  }
+}
+
+function skipToStart() {
+  sound.jump(0);
+}
+
+function skipToEnd() {
+  sound.jump(sound.duration() - 0.00000000001)
+}
+
+function loopSound() {
+  sound.setLoop(!sound.isLooping())
 }
 
 function gui_configuration() {
