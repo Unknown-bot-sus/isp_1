@@ -76,7 +76,7 @@ function initSound() {
   fft.setInput(sound);
 
   sound.connect(lowpassFilter);
-  const soundChain = lowpassFilter.chain(waveshaper, dynamicCompressor)
+  const soundChain = lowpassFilter.chain(waveshaper, dynamicCompressor, reverb)
   // const soundchain = lowpassFilter.chain(waveshaper, dynamicCompressor, reverb);
   fftoutput.setInput(soundChain)
   // fftoutput.setInput(lowpassFilter)
@@ -108,7 +108,7 @@ function draw() {
   dynamicCompressor.amp(dc_outputSlider.value());
 
   
-
+  sound.setVolume(mv_volumeSlider.value())
   // draw the visuals
   drawSpectrum(fft, 560, 210, 200, 100);
   drawSpectrum(fftoutput, 560, 355, 200, 100);
