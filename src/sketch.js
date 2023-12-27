@@ -76,7 +76,7 @@ function initSound() {
   fft.setInput(sound);
 
   sound.connect(lowpassFilter);
-  const soundChain = lowpassFilter.chain(waveshaper)
+  const soundChain = lowpassFilter.chain(waveshaper, dynamicCompressor)
   // const soundchain = lowpassFilter.chain(waveshaper, dynamicCompressor, reverb);
   fftoutput.setInput(soundChain)
   // fftoutput.setInput(lowpassFilter)
@@ -97,6 +97,17 @@ function draw() {
   waveshaper.set(wd_amountSlider.value(), 'none')
   waveshaper.drywet(wd_dryWetSlider.value());
   waveshaper.amp(wd_outputSlider.value())
+
+  const attack = dc_attackSlider.value();
+  const knee = map(dc_kneeSlider.value(), 0, 1, 0, 40);
+  const ratio = map(dc_ratioSlider.value(), 0, 1, 1, 20);
+  const threshold = map(dc_thresholdSlider.value(), 0, 1, -100, 0);
+  const release = dc_releaseSlider.value();
+  dynamicCompressor.set(attack, knee, ratio, threshold, release);
+  dynamicCompressor.drywet(dc_dryWetSlider.value());
+  dynamicCompressor.amp(dc_outputSlider.value());
+
+  
 
   // draw the visuals
   drawSpectrum(fft, 560, 210, 200, 100);
