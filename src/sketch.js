@@ -1,12 +1,15 @@
-// Sound objects
+// Sound Effect objects
 let sound,
   originSound,
   lowpassFilter,
   dynamicCompressor,
   reverb,
   waveshaper,
-  masterVolume,
-  fft,
+  masterVolume;
+
+let reverse = false;
+// spectrums
+let fft,
   fftoutput;
 
 // playback controls
@@ -98,6 +101,7 @@ function draw() {
   waveshaper.drywet(wd_dryWetSlider.value());
   waveshaper.amp(wd_outputSlider.value())
 
+  // dynamic compressor
   const attack = dc_attackSlider.value();
   const knee = map(dc_kneeSlider.value(), 0, 1, 0, 40);
   const ratio = map(dc_ratioSlider.value(), 0, 1, 1, 20);
@@ -107,7 +111,14 @@ function draw() {
   dynamicCompressor.drywet(dc_dryWetSlider.value());
   dynamicCompressor.amp(dc_outputSlider.value());
 
-  
+  const duration = map(rv_durationSlider.value(), 0, 1, 0, 10)
+  const decay = map(rv_decaySlider.value(), 0, 1, 0, 100)
+  // TODO: fix the errror of lag
+  // reverb.set(duration, decay);
+  reverb.drywet(rv_dryWetSlider.value());
+  reverb.amp(rv_outputSlider.value());
+
+  // master volume
   sound.setVolume(mv_volumeSlider.value())
   // draw the visuals
   drawSpectrum(fft, 560, 210, 200, 100);
@@ -115,7 +126,6 @@ function draw() {
 }
 
 // functionality
-
 function sondControlConfig() {
   playButton.mousePressed(play);
   stopButton.mousePressed(stop);
@@ -265,6 +275,7 @@ function gui_configuration() {
   textSize(14);
   text("spectrum in", 560, 200);
   text("spectrum out", 560, 345);
+
 }
 
 function Slider() {
