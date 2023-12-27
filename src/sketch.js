@@ -58,26 +58,9 @@ function setup() {
   background(180);
   initSound();
   gui_configuration();
-  functionalityConfiguration();
+  sondControlConfig();
 }
 
-function draw() {
-   // Map mouseX to a the cutoff frequency from the lowest
-  // frequency (10Hz) to the highest (22050Hz) that humans can hear
-  const filterFreq = map(lp_cutOffSlider.value(), 0, 1, 10, 22050);
-
-  // Map mouseY to resonance (volume boost) at the cutoff frequency
-  const filterRes = map(lp_resonanceSlider.value(), 0, 1, 15, 5);
-  lowpassFilter.set(filterFreq, filterRes)
-  lowpassFilter.drywet(lp_dryWetSlider.value());
-  lowpassFilter.amp(lp_outputSlider.value());
-
-  // draw the visuals
-  drawSpectrum(fft, 560, 210, 200, 100);
-  drawSpectrum(fftoutput, 560, 355, 200, 100);
-}
-
-// functionality
 function initSound() {
   // Initialize p5.sound objects
   fft = new p5.FFT();
@@ -93,11 +76,36 @@ function initSound() {
   fft.setInput(sound);
 
   sound.connect(lowpassFilter);
+  const soundChain = lowpassFilter.chain(waveshaper)
   // const soundchain = lowpassFilter.chain(waveshaper, dynamicCompressor, reverb);
-  fftoutput.setInput(lowpassFilter)
+  fftoutput.setInput(soundChain)
+  // fftoutput.setInput(lowpassFilter)
 }
 
-function functionalityConfiguration() {
+function draw() {
+   // Map mouseX to a the cutoff frequency from the lowest
+  // frequency (10Hz) to the highest (22050Hz) that humans can hear
+  const filterFreq = map(lp_cutOffSlider.value(), 0, 1, 10, 22050);
+
+  // Map mouseY to resonance (volume boost) at the cutoff frequency
+  const filterRes = map(lp_resonanceSlider.value(), 0, 1, 15, 5);
+  lowpassFilter.set(filterFreq, filterRes)
+  lowpassFilter.drywet(lp_dryWetSlider.value());
+  lowpassFilter.amp(lp_outputSlider.value());
+
+  // TODO: change oversample value
+  waveshaper.set(wd_amountSlider.value(), 'none')
+  waveshaper.drywet(wd_dryWetSlider.value());
+  waveshaper.amp(wd_outputSlider.value())
+
+  // draw the visuals
+  drawSpectrum(fft, 560, 210, 200, 100);
+  drawSpectrum(fftoutput, 560, 355, 200, 100);
+}
+
+// functionality
+
+function sondControlConfig() {
   playButton.mousePressed(play);
   stopButton.mousePressed(stop);
   pauseButton.mousePressed(pause);
