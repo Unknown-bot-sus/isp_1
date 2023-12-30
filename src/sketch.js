@@ -1,7 +1,7 @@
 // Sound Effect objects
 let sound,
   originSound,
-  lowpassFilter,
+  filter,
   dynamicCompressor,
   reverb,
   waveshaper,
@@ -9,8 +9,7 @@ let sound,
 
 let reverse = false;
 // spectrums
-let fft,
-  fftoutput;
+let fft, fftoutput;
 
 // playback controls
 let pauseButton;
@@ -69,7 +68,8 @@ function initSound() {
   fft = new p5.FFT();
   fftoutput = new p5.FFT();
 
-  lowpassFilter = new p5.LowPass();
+  filter = new p5.Filter();
+  filter.setType("lowpass");
   dynamicCompressor = new p5.Compressor();
   reverb = new p5.Reverb();
   waveshaper = new p5.Distortion();
@@ -78,28 +78,29 @@ function initSound() {
   sound.disconnect(); // Disconnect from the default output
   fft.setInput(sound);
 
-  sound.connect(lowpassFilter);
-  const soundChain = lowpassFilter.chain(waveshaper, dynamicCompressor, reverb)
-  // const soundchain = lowpassFilter.chain(waveshaper, dynamicCompressor, reverb);
-  fftoutput.setInput(soundChain)
-  // fftoutput.setInput(lowpassFilter)
+  // sound.connect(filter);
+  // const soundChain = filter.chain(waveshaper, dynamicCompressor, reverb);
+
+  sound.connect(filter);
+  filter.chain(waveshaper, dynamicCompressor, reverb);
+  fftoutput.setInput(reverb);
 }
 
 function draw() {
-   // Map mouseX to a the cutoff frequency from the lowest
+  // Map mouseX to a the cutoff frequency from the lowest
   // frequency (10Hz) to the highest (22050Hz) that humans can hear
   const filterFreq = map(lp_cutOffSlider.value(), 0, 1, 10, 22050);
-
+  filter.freq(filterFreq);
   // Map mouseY to resonance (volume boost) at the cutoff frequency
-  const filterRes = map(lp_resonanceSlider.value(), 0, 1, 15, 5);
-  lowpassFilter.set(filterFreq, filterRes)
-  lowpassFilter.drywet(lp_dryWetSlider.value());
-  lowpassFilter.amp(lp_outputSlider.value());
+  const filterRes = map(lp_resonanceSlider.value(), 0, 1, 0.001, 1000);
+  filter.res(filterRes);
+  filter.drywet(lp_dryWetSlider.value());
+  filter.amp(lp_outputSlider.value());
 
   // TODO: change oversample value
-  waveshaper.set(wd_amountSlider.value(), 'none')
+  waveshaper.set(wd_amountSlider.value(), "none");
   waveshaper.drywet(wd_dryWetSlider.value());
-  waveshaper.amp(wd_outputSlider.value())
+  waveshaper.amp(wd_outputSlider.value());
 
   // dynamic compressor
   const attack = dc_attackSlider.value();
@@ -111,15 +112,15 @@ function draw() {
   dynamicCompressor.drywet(dc_dryWetSlider.value());
   dynamicCompressor.amp(dc_outputSlider.value());
 
-  const duration = map(rv_durationSlider.value(), 0, 1, 0, 10)
-  const decay = map(rv_decaySlider.value(), 0, 1, 0, 100)
+  const duration = map(rv_durationSlider.value(), 0, 1, 0, 10);
+  const decay = map(rv_decaySlider.value(), 0, 1, 0, 100);
   // TODO: fix the errror of lag
   // reverb.set(duration, decay);
   reverb.drywet(rv_dryWetSlider.value());
   reverb.amp(rv_outputSlider.value());
 
   // master volume
-  sound.setVolume(mv_volumeSlider.value())
+  sound.setVolume(mv_volumeSlider.value());
   // draw the visuals
   drawSpectrum(fft, 560, 210, 200, 100);
   drawSpectrum(fftoutput, 560, 355, 200, 100);
@@ -149,7 +150,7 @@ function stop() {
 
 function pause() {
   if (sound.isPlaying()) {
-    sound.pause()
+    sound.pause();
   }
 }
 
@@ -158,11 +159,11 @@ function skipToStart() {
 }
 
 function skipToEnd() {
-  sound.jump(sound.duration() - 0.00000000001)
+  sound.jump(sound.duration() - 0.00000000001);
 }
 
 function loopSound() {
-  sound.setLoop(!sound.isLooping())
+  sound.setLoop(!sound.isLooping());
 }
 
 function gui_configuration() {
@@ -275,7 +276,6 @@ function gui_configuration() {
   textSize(14);
   text("spectrum in", 560, 200);
   text("spectrum out", 560, 345);
-
 }
 
 function Slider() {
