@@ -7,6 +7,11 @@ let sound,
   waveshaper,
   masterVolume;
 
+// Recording
+let recorder,
+  soundFile,
+  recordState = 0;
+
 let reverse = false;
 // spectrums
 let fft, fftoutput;
@@ -84,6 +89,10 @@ function initSound() {
   sound.connect(filter);
   filter.chain(waveshaper, dynamicCompressor, reverb);
   fftoutput.setInput(reverb);
+
+  recorder = new p5.SoundRecorder();
+  recorder.setInput(reverb);
+  soundFile = new p5.SoundFile();
 }
 
 function draw() {
@@ -120,7 +129,7 @@ function draw() {
   reverb.amp(rv_outputSlider.value());
 
   // master volume
-  sound.setVolume(mv_volumeSlider.value());
+  outputVolume(mv_volumeSlider.value());
   // draw the visuals
   drawSpectrum(fft, 560, 210, 200, 100);
   drawSpectrum(fftoutput, 560, 355, 200, 100);
@@ -134,6 +143,7 @@ function sondControlConfig() {
   skipStartButton.mousePressed(skipToStart);
   skipEndButton.mousePressed(skipToEnd);
   loopButton.mousePressed(loopSound);
+  recordButton.mousePressed(record);
 }
 
 function play() {
@@ -164,6 +174,20 @@ function skipToEnd() {
 
 function loopSound() {
   sound.setLoop(!sound.isLooping());
+}
+
+function record() {
+  if (recordState === 0) {
+    soundFile = new p5.SoundFile();
+    recorder.record(soundFile);
+    recordState++;
+  } else if (recordState === 1) {
+    recorder.stop();
+    recordState++;
+  } else {
+    saveSound(soundFile, "./sound.wav");
+    recordState = 0;
+  }
 }
 
 function gui_configuration() {
