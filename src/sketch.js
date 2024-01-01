@@ -107,7 +107,7 @@ function initVisualizer() {
   fft.setInput(sound);
 
   fftoutput = new p5.FFT();
-  fftoutput.setInput(reverb);
+  fftoutput.setInput();
 }
 
 function initMic() {
