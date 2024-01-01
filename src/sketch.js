@@ -1,6 +1,6 @@
 // Sound Effect objects
 let sound,
-  originSound,
+  inputSource,
   filter,
   dynamicCompressor,
   reverb,
@@ -11,6 +11,9 @@ let sound,
 let recorder,
   soundFile,
   recordState = 0;
+
+// mic
+let mic;
 
 let reverse = false;
 // spectrums
@@ -63,20 +66,23 @@ function setup() {
   createCanvas(800, 600); // create the canvas to draw on
   background(180); // set the background color
   initSound(); // create sound objects necessary for filtering
+  initRecorder();
+  initVisualizer();
+  initMic();
   gui_configuration(); // drawing the ui such as
   sondControlConfig();
 }
 
 function initSound() {
   // Initialize p5.sound objects
-  fft = new p5.FFT();
-  fftoutput = new p5.FFT();
-
   filter = new p5.Filter();
   filter_type = "lowpass";
   filter.setType(filter_type);
+
   dynamicCompressor = new p5.Compressor();
+
   reverb = new p5.Reverb();
+
   waveshaper = new p5.Distortion();
 
   // Disconnect from the default output
@@ -85,16 +91,28 @@ function initSound() {
   dynamicCompressor.disconnect();
   waveshaper.disconnect();
 
-  fft.setInput(sound);
-
   // Connect the effects in the desired order
   sound.connect(filter);
   filter.chain(waveshaper, dynamicCompressor, reverb);
-  fftoutput.setInput(reverb);
+}
 
+function initRecorder() {
   recorder = new p5.SoundRecorder();
   recorder.setInput(reverb);
   soundFile = new p5.SoundFile();
+}
+
+function initVisualizer() {
+  fft = new p5.FFT();
+  fft.setInput(sound);
+
+  fftoutput = new p5.FFT();
+  fftoutput.setInput(reverb);
+}
+
+function initMic() {
+  mic = new p5.AudioIn();
+  mic.amp(1);
 }
 
 function gui_configuration() {
@@ -122,7 +140,13 @@ function gui_configuration() {
   filter_select.option("bandpass");
   filter_select.selected("lowpass");
 
-  // Important: you may have to change the slider parameters (min, max, value and step)
+  // input source selection
+  input_select = createSelect();
+  input_select.position(560, 20);
+  input_select.option("mic");
+  input_select.option("pre-recorded");
+  input_select.selected("pre-recorded");
+  input_select.changed(() => console.log("hello"));
 
   // low-pass filter
   textSize(14);
@@ -227,9 +251,13 @@ function sondControlConfig() {
   loopButton.mousePressed(loopSound);
   recordButton.mousePressed(record);
 
+  filter_select.changed(setFilterType);
+
   rv_decaySlider.changed(setReverb);
   rv_durationSlider.changed(setReverb);
   rv_reverseButton.mousePressed(setReverse);
+
+  input_select.changed(setAudioInput);
 }
 
 function play() {
@@ -276,6 +304,14 @@ function record() {
   }
 }
 
+function setFilterType() {
+  const filter_select_value = filter_select.selected();
+  if (!(filter_select_value === filter_type)) {
+    filter_type = filter_select_value;
+    filter.setType(filter_type);
+  }
+}
+
 function setReverb() {
   const duration = map(rv_durationSlider.value(), 0, 1, 0, 10);
   const decay = map(rv_decaySlider.value(), 0, 1, 0, 100);
@@ -287,12 +323,24 @@ function setReverse() {
   setReverb();
 }
 
-function draw() {
-  const filter_select_value = filter_select.selected();
-  if (!(filter_select_value === filter_type)) {
-    filter_type = filter_select_value;
-    filter.setType(filter_type);
+function setAudioInput() {
+  let inputSource = input_select.selected();
+  switch (inputSource) {
+    case "mic":
+      sound.disconnect();
+      mic.start();
+      fft.setInput(mic);
+      mic.connect(filter);
+      break;
+    default:
+      mic.disconnect();
+      sound.connect(filter);
+      mic.stop();
+      break;
   }
+}
+
+function draw() {
   // Map slider value to a the cutoff frequency from the lowest
   // frequency (10Hz) to the highest (22050Hz) that humans can hear
   const filterFreq = map(lp_cutOffSlider.value(), 0, 1, 10, 22050);
