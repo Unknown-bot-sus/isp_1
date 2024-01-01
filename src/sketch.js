@@ -225,7 +225,7 @@ function gui_configuration() {
   wd_amountSlider = createSlider(0, 1, 0.5, 0.01);
   wd_amountSlider.position(210, 335);
   text("distortion amount", 210, 330);
-  wd_oversampleSlider = createSlider(0, 1, 0.5, 0.01);
+  wd_oversampleSlider = createSlider(0, 1, 0.5, 0.5);
   wd_oversampleSlider.position(210, 380);
   text("oversample", 210, 375);
   wd_dryWetSlider = createSlider(0, 1, 0.5, 0.01);
@@ -351,8 +351,11 @@ function draw() {
   filter.drywet(lp_dryWetSlider.value());
   filter.amp(lp_outputSlider.value());
 
-  // TODO: change oversample value
-  waveshaper.set(wd_amountSlider.value(), "none");
+  const oversample = wd_oversampleSlider.value();
+  waveshaper.set(
+    wd_amountSlider.value(),
+    oversample > 0 ? (oversample > 0.5 ? "4x" : "2x") : "none"
+  );
   waveshaper.drywet(wd_dryWetSlider.value());
   waveshaper.amp(wd_outputSlider.value());
 
