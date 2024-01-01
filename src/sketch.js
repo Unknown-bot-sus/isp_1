@@ -79,10 +79,15 @@ function initSound() {
   reverb = new p5.Reverb();
   waveshaper = new p5.Distortion();
 
-  // Connect the effects in the desired order
-  sound.disconnect(); // Disconnect from the default output
+  // Disconnect from the default output
+  sound.disconnect();
+  filter.disconnect();
+  dynamicCompressor.disconnect();
+  waveshaper.disconnect();
+
   fft.setInput(sound);
 
+  // Connect the effects in the desired order
   sound.connect(filter);
   filter.chain(waveshaper, dynamicCompressor, reverb);
   fftoutput.setInput(reverb);
