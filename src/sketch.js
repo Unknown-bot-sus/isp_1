@@ -83,9 +83,6 @@ function initSound() {
   sound.disconnect(); // Disconnect from the default output
   fft.setInput(sound);
 
-  // sound.connect(filter);
-  // const soundChain = filter.chain(waveshaper, dynamicCompressor, reverb);
-
   sound.connect(filter);
   filter.chain(waveshaper, dynamicCompressor, reverb);
   fftoutput.setInput(reverb);
@@ -224,6 +221,10 @@ function sondControlConfig() {
   skipEndButton.mousePressed(skipToEnd);
   loopButton.mousePressed(loopSound);
   recordButton.mousePressed(record);
+
+  rv_decaySlider.changed(setReverb);
+  rv_durationSlider.changed(setReverb);
+  rv_reverseButton.mousePressed(setReverse);
 }
 
 function play() {
@@ -270,6 +271,17 @@ function record() {
   }
 }
 
+function setReverb() {
+  const duration = map(rv_durationSlider.value(), 0, 1, 0, 10);
+  const decay = map(rv_decaySlider.value(), 0, 1, 0, 100);
+  reverb.set(duration, decay, reverse);
+}
+
+function setReverse() {
+  reverse = !reverse;
+  setReverb();
+}
+
 function draw() {
   const filter_select_value = filter_select.selected();
   if (!(filter_select_value === filter_type)) {
@@ -301,10 +313,6 @@ function draw() {
   dynamicCompressor.drywet(dc_dryWetSlider.value());
   dynamicCompressor.amp(dc_outputSlider.value());
 
-  const duration = map(rv_durationSlider.value(), 0, 1, 0, 10);
-  const decay = map(rv_decaySlider.value(), 0, 1, 0, 100);
-  // TODO: fix the errror of lag
-  // reverb.set(duration, decay);
   reverb.drywet(rv_dryWetSlider.value());
   reverb.amp(rv_outputSlider.value());
 
