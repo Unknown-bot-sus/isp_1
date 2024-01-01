@@ -53,14 +53,14 @@ let wd_dryWetSlider;
 let wd_outputSlider;
 
 function preload() {
-  sound = loadSound("../assets/sound.wav");
+  sound = loadSound("../assets/sound.wav"); // load the recorded sound into memory
 }
 
 function setup() {
-  createCanvas(800, 600);
-  background(180);
-  initSound();
-  gui_configuration();
+  createCanvas(800, 600); // create the canvas to draw on
+  background(180); // set the background color
+  initSound(); // create sound objects necessary for filtering
+  gui_configuration(); // drawing the ui such as 
   sondControlConfig();
 }
 
