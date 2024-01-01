@@ -26,7 +26,12 @@ let pauseButton,
   recordButton;
 
 // low-pass filter
-let lp_cutOffSlider, lp_resonanceSlider, lp_dryWetSlider, lp_outputSlider;
+let lp_cutOffSlider,
+  lp_resonanceSlider,
+  lp_dryWetSlider,
+  lp_outputSlider,
+  filter_select,
+  filter_type;
 
 // dynamic compressor
 let dc_attackSlider,
@@ -68,7 +73,8 @@ function initSound() {
   fftoutput = new p5.FFT();
 
   filter = new p5.Filter();
-  filter.setType("lowpass");
+  filter_type = "lowpass";
+  filter.setType(filter_type);
   dynamicCompressor = new p5.Compressor();
   reverb = new p5.Reverb();
   waveshaper = new p5.Distortion();
@@ -105,6 +111,14 @@ function gui_configuration() {
   loopButton.position(352, 20);
   recordButton = createButton("record");
   recordButton.position(402, 20);
+
+  // filter selection
+  filter_select = createSelect();
+  filter_select.position(465, 20);
+  filter_select.option("lowpass");
+  filter_select.option("highpass");
+  filter_select.option("bandpass");
+  filter_select.selected("lowpass");
 
   // Important: you may have to change the slider parameters (min, max, value and step)
 
@@ -257,11 +271,16 @@ function record() {
 }
 
 function draw() {
-  // Map mouseX to a the cutoff frequency from the lowest
+  const filter_select_value = filter_select.selected();
+  if (!(filter_select_value === filter_type)) {
+    filter_type = filter_select_value;
+    filter.setType(filter_type);
+  }
+  // Map slider value to a the cutoff frequency from the lowest
   // frequency (10Hz) to the highest (22050Hz) that humans can hear
   const filterFreq = map(lp_cutOffSlider.value(), 0, 1, 10, 22050);
   filter.freq(filterFreq);
-  // Map mouseY to resonance (volume boost) at the cutoff frequency
+  // Map slider value to resonance (volume boost) at the cutoff frequency
   const filterRes = map(lp_resonanceSlider.value(), 0, 1, 0.001, 1000);
   filter.res(filterRes);
   filter.drywet(lp_dryWetSlider.value());
