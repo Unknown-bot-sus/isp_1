@@ -64,7 +64,7 @@ function setup() {
   createCanvas(800, 600); // create the canvas to draw on
   background(180); // set the background color
   initSound(); // create sound objects necessary for filtering
-  gui_configuration(); // drawing the ui such as 
+  gui_configuration(); // drawing the ui such as
   sondControlConfig();
 }
 
@@ -93,101 +93,6 @@ function initSound() {
   recorder = new p5.SoundRecorder();
   recorder.setInput(reverb);
   soundFile = new p5.SoundFile();
-}
-
-function draw() {
-  // Map mouseX to a the cutoff frequency from the lowest
-  // frequency (10Hz) to the highest (22050Hz) that humans can hear
-  const filterFreq = map(lp_cutOffSlider.value(), 0, 1, 10, 22050);
-  filter.freq(filterFreq);
-  // Map mouseY to resonance (volume boost) at the cutoff frequency
-  const filterRes = map(lp_resonanceSlider.value(), 0, 1, 0.001, 1000);
-  filter.res(filterRes);
-  filter.drywet(lp_dryWetSlider.value());
-  filter.amp(lp_outputSlider.value());
-
-  // TODO: change oversample value
-  waveshaper.set(wd_amountSlider.value(), "none");
-  waveshaper.drywet(wd_dryWetSlider.value());
-  waveshaper.amp(wd_outputSlider.value());
-
-  // dynamic compressor
-  const attack = dc_attackSlider.value();
-  const knee = map(dc_kneeSlider.value(), 0, 1, 0, 40);
-  const ratio = map(dc_ratioSlider.value(), 0, 1, 1, 20);
-  const threshold = map(dc_thresholdSlider.value(), 0, 1, -100, 0);
-  const release = dc_releaseSlider.value();
-  dynamicCompressor.set(attack, knee, ratio, threshold, release);
-  dynamicCompressor.drywet(dc_dryWetSlider.value());
-  dynamicCompressor.amp(dc_outputSlider.value());
-
-  const duration = map(rv_durationSlider.value(), 0, 1, 0, 10);
-  const decay = map(rv_decaySlider.value(), 0, 1, 0, 100);
-  // TODO: fix the errror of lag
-  // reverb.set(duration, decay);
-  reverb.drywet(rv_dryWetSlider.value());
-  reverb.amp(rv_outputSlider.value());
-
-  // master volume
-  outputVolume(mv_volumeSlider.value());
-  // draw the visuals
-  drawSpectrum(fft, 560, 210, 200, 100);
-  drawSpectrum(fftoutput, 560, 355, 200, 100);
-}
-
-// functionality
-function sondControlConfig() {
-  playButton.mousePressed(play);
-  stopButton.mousePressed(stop);
-  pauseButton.mousePressed(pause);
-  skipStartButton.mousePressed(skipToStart);
-  skipEndButton.mousePressed(skipToEnd);
-  loopButton.mousePressed(loopSound);
-  recordButton.mousePressed(record);
-}
-
-function play() {
-  if (!sound.isPlaying()) {
-    sound.play();
-  }
-}
-
-function stop() {
-  if (sound.isPlaying()) {
-    sound.stop();
-  }
-}
-
-function pause() {
-  if (sound.isPlaying()) {
-    sound.pause();
-  }
-}
-
-function skipToStart() {
-  sound.jump(0);
-}
-
-function skipToEnd() {
-  sound.jump(sound.duration() - 0.00000000001);
-}
-
-function loopSound() {
-  sound.setLoop(!sound.isLooping());
-}
-
-function record() {
-  if (recordState === 0) {
-    soundFile = new p5.SoundFile();
-    recorder.record(soundFile);
-    recordState++;
-  } else if (recordState === 1) {
-    recorder.stop();
-    recordState++;
-  } else {
-    saveSound(soundFile, "./sound.wav");
-    recordState = 0;
-  }
 }
 
 function gui_configuration() {
@@ -302,10 +207,99 @@ function gui_configuration() {
   text("spectrum out", 560, 345);
 }
 
-function Slider() {
-  const slider = createSlider(0, 1, 0.5, 0.01);
-  slider.position(210, 470);
-  text("output level", 210, 465);
+// functionality
+function sondControlConfig() {
+  playButton.mousePressed(play);
+  stopButton.mousePressed(stop);
+  pauseButton.mousePressed(pause);
+  skipStartButton.mousePressed(skipToStart);
+  skipEndButton.mousePressed(skipToEnd);
+  loopButton.mousePressed(loopSound);
+  recordButton.mousePressed(record);
+}
+
+function play() {
+  if (!sound.isPlaying()) {
+    sound.play();
+  }
+}
+
+function stop() {
+  if (sound.isPlaying()) {
+    sound.stop();
+  }
+}
+
+function pause() {
+  if (sound.isPlaying()) {
+    sound.pause();
+  }
+}
+
+function skipToStart() {
+  sound.jump(0);
+}
+
+function skipToEnd() {
+  sound.jump(sound.duration() - 0.00000000001);
+}
+
+function loopSound() {
+  sound.setLoop(!sound.isLooping());
+}
+
+function record() {
+  if (recordState === 0) {
+    soundFile = new p5.SoundFile();
+    recorder.record(soundFile);
+    recordState++;
+  } else if (recordState === 1) {
+    recorder.stop();
+    recordState++;
+  } else {
+    saveSound(soundFile, "./sound.wav");
+    recordState = 0;
+  }
+}
+
+function draw() {
+  // Map mouseX to a the cutoff frequency from the lowest
+  // frequency (10Hz) to the highest (22050Hz) that humans can hear
+  const filterFreq = map(lp_cutOffSlider.value(), 0, 1, 10, 22050);
+  filter.freq(filterFreq);
+  // Map mouseY to resonance (volume boost) at the cutoff frequency
+  const filterRes = map(lp_resonanceSlider.value(), 0, 1, 0.001, 1000);
+  filter.res(filterRes);
+  filter.drywet(lp_dryWetSlider.value());
+  filter.amp(lp_outputSlider.value());
+
+  // TODO: change oversample value
+  waveshaper.set(wd_amountSlider.value(), "none");
+  waveshaper.drywet(wd_dryWetSlider.value());
+  waveshaper.amp(wd_outputSlider.value());
+
+  // dynamic compressor
+  const attack = dc_attackSlider.value();
+  const knee = map(dc_kneeSlider.value(), 0, 1, 0, 40);
+  const ratio = map(dc_ratioSlider.value(), 0, 1, 1, 20);
+  const threshold = map(dc_thresholdSlider.value(), 0, 1, -100, 0);
+  const release = dc_releaseSlider.value();
+  dynamicCompressor.set(attack, knee, ratio, threshold, release);
+  dynamicCompressor.drywet(dc_dryWetSlider.value());
+  dynamicCompressor.amp(dc_outputSlider.value());
+
+  const duration = map(rv_durationSlider.value(), 0, 1, 0, 10);
+  const decay = map(rv_decaySlider.value(), 0, 1, 0, 100);
+  // TODO: fix the errror of lag
+  // reverb.set(duration, decay);
+  reverb.drywet(rv_dryWetSlider.value());
+  reverb.amp(rv_outputSlider.value());
+
+  // master volume
+  outputVolume(mv_volumeSlider.value());
+  // draw the visuals
+  drawSpectrum(fft, 560, 210, 200, 100);
+  drawSpectrum(fftoutput, 560, 355, 200, 100);
 }
 
 function drawSpectrum(fft, x, y, w, h) {
