@@ -17,44 +17,38 @@ let reverse = false;
 let fft, fftoutput;
 
 // playback controls
-let pauseButton;
-let playButton;
-let stopButton;
-let skipStartButton;
-let skipEndButton;
-let loopButton;
-let recordButton;
+let pauseButton,
+  playButton,
+  stopButton,
+  skipStartButton,
+  skipEndButton,
+  loopButton,
+  recordButton;
 
 // low-pass filter
-let lp_cutOffSlider;
-let lp_resonanceSlider;
-let lp_dryWetSlider;
-let lp_outputSlider;
+let lp_cutOffSlider, lp_resonanceSlider, lp_dryWetSlider, lp_outputSlider;
 
 // dynamic compressor
-let dc_attackSlider;
-let dc_kneeSlider;
-let dc_releaseSlider;
-let dc_ratioSlider;
-let dc_thresholdSlider;
-let dc_dryWetSlider;
-let dc_outputSlider;
+let dc_attackSlider,
+  dc_kneeSlider,
+  dc_releaseSlider,
+  dc_ratioSlider,
+  dc_thresholdSlider,
+  dc_dryWetSlider,
+  dc_outputSlider;
 
 // master volume
 let mv_volumeSlider;
 
 // reverb
-let rv_durationSlider;
-let rv_decaySlider;
-let rv_dryWetSlider;
-let rv_outputSlider;
-let rv_reverseButton;
+let rv_durationSlider,
+  rv_decaySlider,
+  rv_dryWetSlider,
+  rv_outputSlider,
+  rv_reverseButton;
 
 // waveshaper distortion
-let wd_amountSlider;
-let wd_oversampleSlider;
-let wd_dryWetSlider;
-let wd_outputSlider;
+let wd_amountSlider, wd_oversampleSlider, wd_dryWetSlider, wd_outputSlider;
 
 function preload() {
   sound = loadSound("../assets/sound.wav"); // load the recorded sound into memory
