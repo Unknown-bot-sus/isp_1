@@ -98,7 +98,7 @@ function initSound() {
 
 function initRecorder() {
   recorder = new p5.SoundRecorder();
-  recorder.setInput(reverb);
+  recorder.setInput();
   soundFile = new p5.SoundFile();
 }
 
@@ -253,9 +253,18 @@ function sondControlConfig() {
 
   filter_select.changed(setFilterType);
 
+  lp_cutOffSlider.changed(setFitlerFreq);
+  lp_resonanceSlider.changed(setFilterRes);
+  lp_dryWetSlider.changed(setFilterDrywet);
+  lp_outputSlider.changed(setFilterAmp);
+
   rv_decaySlider.changed(setReverb);
   rv_durationSlider.changed(setReverb);
   rv_reverseButton.mousePressed(setReverse);
+  rv_dryWetSlider.changed(setReverbDrywet);
+  rv_outputSlider.changed(setReverbAmp);
+
+  mv_volumeSlider.changed(setMasterVolume);
 
   input_select.changed(setAudioInput);
 }
@@ -312,6 +321,27 @@ function setFilterType() {
   }
 }
 
+function setFitlerFreq() {
+  // Map slider value to a the cutoff frequency from the lowest
+  // frequency (10Hz) to the highest (22050Hz) that humans can hear
+  const filterFreq = map(lp_cutOffSlider.value(), 0, 1, 10, 22050);
+  filter.freq(filterFreq);
+}
+
+function setFilterRes() {
+  // Map slider value to resonance (volume boost) at the cutoff frequency
+  const filterRes = map(lp_resonanceSlider.value(), 0, 1, 0.001, 1000);
+  filter.res(filterRes);
+}
+
+function setFilterDrywet() {
+  filter.drywet(lp_dryWetSlider.value());
+}
+
+function setFilterAmp() {
+  filter.amp(lp_outputSlider.value());
+}
+
 function setReverb() {
   const duration = map(rv_durationSlider.value(), 0, 1, 0, 10);
   const decay = map(rv_decaySlider.value(), 0, 1, 0, 100);
@@ -323,6 +353,19 @@ function setReverse() {
   setReverb();
 }
 
+function setReverbDrywet() {
+  reverb.drywet(rv_dryWetSlider.value());
+}
+
+function setReverbAmp() {
+  reverb.amp(rv_outputSlider.value());
+}
+
+function setMasterVolume() {
+  // master volume
+  outputVolume(mv_volumeSlider.value());
+}
+
 function setAudioInput() {
   let inputSource = input_select.selected();
   switch (inputSource) {
@@ -331,6 +374,7 @@ function setAudioInput() {
       mic.start();
       fft.setInput(mic);
       mic.connect(filter);
+      fftoutput.setInput();
       break;
     default:
       mic.disconnect();
@@ -341,16 +385,6 @@ function setAudioInput() {
 }
 
 function draw() {
-  // Map slider value to a the cutoff frequency from the lowest
-  // frequency (10Hz) to the highest (22050Hz) that humans can hear
-  const filterFreq = map(lp_cutOffSlider.value(), 0, 1, 10, 22050);
-  filter.freq(filterFreq);
-  // Map slider value to resonance (volume boost) at the cutoff frequency
-  const filterRes = map(lp_resonanceSlider.value(), 0, 1, 0.001, 1000);
-  filter.res(filterRes);
-  filter.drywet(lp_dryWetSlider.value());
-  filter.amp(lp_outputSlider.value());
-
   const oversample = wd_oversampleSlider.value();
   waveshaper.set(
     wd_amountSlider.value(),
@@ -369,11 +403,6 @@ function draw() {
   dynamicCompressor.drywet(dc_dryWetSlider.value());
   dynamicCompressor.amp(dc_outputSlider.value());
 
-  reverb.drywet(rv_dryWetSlider.value());
-  reverb.amp(rv_outputSlider.value());
-
-  // master volume
-  outputVolume(mv_volumeSlider.value());
   // draw the visuals
   drawSpectrum(fft, 560, 210, 200, 100);
   drawSpectrum(fftoutput, 560, 355, 200, 100);
